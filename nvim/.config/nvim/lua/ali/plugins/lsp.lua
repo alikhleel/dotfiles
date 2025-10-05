@@ -28,6 +28,8 @@ return {
 			-- Allows extra capabilities provided by blink.cmp
 			"saghen/blink.cmp",
 			"mfussenegger/nvim-jdtls",
+			"nvimtools/none-ls.nvim", -- null-ls,
+			"jay-babu/mason-null-ls.nvim",
 		},
 		config = function()
 			-- Brief aside: **What is LSP?**
@@ -136,6 +138,12 @@ return {
 					end
 				end,
 			})
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = "java",
+				callback = function(args)
+					require("ali.jdtls").setup({})
+				end,
+			})
 
 			-- Diagnostic Config
 			-- See :help vim.diagnostic.Opts
@@ -182,25 +190,20 @@ return {
 						},
 					},
 				},
-				jdtls = {
-					pattern = "java",
-					callback = require("ali.jdtls"),
-				},
+				jdtls = {},
 			}
 
 			local ensure_installed = vim.tbl_keys(servers or {})
-			vim.list_extend(ensure_installed, {
+			local external_tools = {
 				"stylua", -- Used to format Lua code
-			})
-			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
+			}
 			require("mason-lspconfig").setup({
+				ensure_installed = ensure_installed,
+				automatic_enable = false,
+			})
+			require("mason-null-ls").setup({
+				ensure_installed = external_tools,
 				automatic_installation = true,
-				automatic_setup = true,
-				automatic_enable = {
-					exclude = {
-						"jdtls",
-					},
-				},
 			})
 			-- IMPORTANT: This is a very important fix for the kickstart
 			for server_name, server_opts in pairs(servers) do

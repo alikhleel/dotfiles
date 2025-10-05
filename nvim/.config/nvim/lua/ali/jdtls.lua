@@ -58,6 +58,17 @@ function M:setup()
 		settings = { java = {} },
 		init_options = { bundles = {} },
 		capabilities = require("blink.cmp").get_lsp_capabilities(),
+		on_attach = function(client, bufnr)
+			local opts = { buffer = bufnr, noremap = true, silent = true }
+			local jdtls = require("jdtls")
+
+			vim.keymap.set("n", "<leader>oi", jdtls.organize_imports, opts)
+			vim.keymap.set("v", "<leader>ev", function()
+				jdtls.extract_variable(true)
+			end, opts)
+			vim.keymap.set("n", "<leader>ec", jdtls.extract_constant, opts)
+			vim.keymap.set("v", "<leader>em", jdtls.extract_method, opts)
+		end,
 	}
 
 	jdtls.start_or_attach(config)
